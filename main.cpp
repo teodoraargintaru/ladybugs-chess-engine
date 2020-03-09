@@ -1,30 +1,18 @@
-#include <fstream>
-#include <iostream>
-#include <string.h>
-#include <time.h>
-
-using namespace std;
-
-#define WHITE    1
-#define BLACK    2
-#define NONE     0
-#define ANALYZE  3
-#define forever while(1)
-
-void readFromInput(string &input){
-    getline(cin, input);
-    if(input.size() > 77){
-        exit(0);
-    }
-}
-
-// TODO: map the board and the pieces in order to check legal moves
+#include "engine.h"
 
 int main(){
-    int colorToMove = WHITE, engineColor = NONE;
     char command[78];
     string input;
-    ofstream out("fisier.out");
+
+    /*initializeBoard();
+    printBoard();
+    printMap();*/
+
+
+    readFromInput(input); //xboard
+    cin.rdbuf()->in_avail();
+    readFromInput(input); //protover
+    cout<<"feature sigint=0 usermove=1\n"; // force engine to send usermove before a move
 
     forever{
         cout.setf(ios::unitbuf);
@@ -34,39 +22,43 @@ int main(){
         strcpy(command, input.c_str());
         // TODO: clock
 
-        if(strcmp(command, "xboard") == 0){
-            continue;
-            //TODO??
-        } else if(strcmp(command, "new") == 0){
-                colorToMove = WHITE;
-                engineColor = BLACK;
-                cout<<"feature sigint=0 usermove=1\n"; // force engine to send usermove before a move
+        if(strcmp(command, "new") == 0){
+            initializeBoard();
+            colorToMove = WHITE;
+            engineColor = BLACK;
             //TODO : Associate the engine's clock with Black and the opponent's clock with White. Reset clocks *
         } else if(strcmp(command, "white") == 0){
             colorToMove = WHITE;
+            engineColor = BLACK;
+            force = false;
+            applyStrategy();
         } else if(strcmp(command, "black") == 0){
             colorToMove = BLACK;
+            engineColor = WHITE;
+            force = false;
+            applyStrategy();
         } else if(strcmp(command, "quit") == 0){
             break;
-        } else if(strcmp(command, "resign") == 0){
-
         } else if(strcmp(command, "force") == 0){
             engineColor = NONE;
+            force = true;
             //TODO: Stop clocks. The engine should check that moves received in force
             // mode are legal and made in the proper turn, but should not think, ponder, or make moves of its own.
         } else if(strcmp(command, "go") == 0){
             engineColor = colorToMove;
+            force = false;
             //TODO:  Associate the engine's clock with the color that is on move, the opponent's clock with the
             // color that is not on move. Start the engine's clock. Start thinking and eventually make a move.
         } else if(strstr(command, "usermove") != nullptr){
-            char move[70]; // stores move as fromTo
+            char move[5]; // stores move as fromTo
             strcpy(move, command + 9);
+            markMoveOnBoard(move);
 
-            colorToMove = BLACK;
-            //dummy move to check if this works
-            cout<<"move e7e5\n";
+            if(force){
+                colorToMove = colorToMove == WHITE ? BLACK : WHITE;
+            }
 
-            //TODO: move to position, check if move is valid
+            applyStrategy();
         } else continue;
     }
     return 0;
