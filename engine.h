@@ -7,14 +7,12 @@
 
 #include "codifications.h"
 
-
 inline int board[9][9] = {0};
 // positions[piece] = line * 10 + col;
 inline unordered_map<int, int> positions;
 inline bool force = false;
 inline char lastMove[5];
 inline int colorToMove = WHITE, engineColor = NONE;
-
 
 // translates position from board[line][col] to positions map value
 void translatePosition(int line, int col, int piece);

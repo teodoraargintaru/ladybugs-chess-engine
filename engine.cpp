@@ -3,6 +3,7 @@
 //
 #include "engine.h"
 
+
 void translatePosition(int line, int col, int piece) {
     positions[piece] = line * 10 + col;
 }
@@ -81,7 +82,7 @@ char * makeMove(int colFrom, int colTo, int lineFrom, int lineTo) {
     board[lineTo][colTo] = piece;
     translatePosition(lineTo, colTo, piece);
 
-    char* move = static_cast<char *>(malloc(5));
+    char* move = (char *)malloc(5);
     move[0] = colFrom + 'a' - 1;
     move[1] = lineFrom + '0';
     move[2] = colTo + 'a' - 1;
@@ -143,6 +144,7 @@ void applyStrategy() {
     if(engineColor == WHITE){
         legal = movePawn(PAWN1_W);
     } else if(engineColor == BLACK){
+
         legal = movePawn(PAWN1_B);
     }
     if(legal == false){
