@@ -1,5 +1,7 @@
 #include "engine.h"
 
+
+
 int main(){
     char command[78];
     string input;
@@ -8,11 +10,14 @@ int main(){
     printBoard();
     printMap();*/
 
+    cout.setf(ios::unitbuf);
+    cin.rdbuf()->in_avail();
 
     readFromInput(input); //xboard
     cin.rdbuf()->in_avail();
     readFromInput(input); //protover
     cout<<"feature sigint=0 usermove=1\n"; // force engine to send usermove before a move
+    cout.flush();
 
     forever{
         cout.setf(ios::unitbuf);
@@ -26,17 +31,21 @@ int main(){
             initializeBoard();
             colorToMove = WHITE;
             engineColor = BLACK;
+
             //TODO : Associate the engine's clock with Black and the opponent's clock with White. Reset clocks *
         } else if(strcmp(command, "white") == 0){
+            
             colorToMove = WHITE;
             engineColor = BLACK;
             force = false;
-            applyStrategy();
+            
         } else if(strcmp(command, "black") == 0){
+            
             colorToMove = BLACK;
             engineColor = WHITE;
             force = false;
-            applyStrategy();
+            
+
         } else if(strcmp(command, "quit") == 0){
             break;
         } else if(strcmp(command, "force") == 0){
@@ -47,9 +56,10 @@ int main(){
         } else if(strcmp(command, "go") == 0){
             engineColor = colorToMove;
             force = false;
+            applyStrategy();
             //TODO:  Associate the engine's clock with the color that is on move, the opponent's clock with the
             // color that is not on move. Start the engine's clock. Start thinking and eventually make a move.
-        } else if(strstr(command, "usermove") != nullptr){
+        } else if(strstr(command, "usermove") != NULL){
             char move[5]; // stores move as fromTo
             strcpy(move, command + 9);
             markMoveOnBoard(move);
@@ -59,6 +69,7 @@ int main(){
             }
 
             applyStrategy();
+            //cout<<"move e7e6\n";
         } else continue;
     }
     return 0;
