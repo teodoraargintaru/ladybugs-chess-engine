@@ -77,3 +77,9 @@ Resposabilitati coechipieri:
 	   elaborarea unui schelet initial pentru fisierul main
 -Andreea : debugging pentru problemele generate de comenzile white, black, go
 	   si elaborarea fisierului README 
+
+Modaliate de compilare:
+cmake .
+make
+./ladybugs
+Versiune de compilator pe care am testat: clang-1100.0.33.17
