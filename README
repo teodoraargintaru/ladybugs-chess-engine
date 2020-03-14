@@ -81,5 +81,10 @@ Resposabilitati coechipieri:
 Modaliate de compilare:
 cmake .
 make
-./ladybugs
+xboard -debug -fcp "./ladybugs"
+
+sau
+
+./run.sh
+
 Versiune de compilator pe care am testat: clang-1100.0.33.17
