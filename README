@@ -88,3 +88,4 @@ sau
 ./run.sh
 
 Versiune de compilator pe care am testat: clang-1100.0.33.17
+Am folosit varianta c++ 17.
