@@ -69,4 +69,11 @@ necesare, vom folosi urmatoarele functii si variabile :
 			da resign pentru culoarea engine-ului
 
 
-
+Resposabilitati coechipieri:
+-comune : gandirea strategie si modelul implementarii, elaborarea codului sursa
+	  (activitati realizate in timpul intalnirii face-to-face, 
+	  pentru o comunicare facila si eficienta)
+-Teodora : organizarea codului in fisiere separate, adaugarea de comentarii, 
+	   elaborarea unui schelet initial pentru fisierul main
+-Andreea : debugging pentru problemele generate de comenzile white, black, go
+	   si elaborarea fisierului README 
