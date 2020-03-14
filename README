@@ -1,0 +1,72 @@
+		
+Argintaru Teodora
+Nica Andreea
+325CC		
+ 			 _              _       ____                  
+			| |    __ _  __| |_   _| __ ) _   _  __ _ ___ 
+ 			| |   / _` |/ _` | | | |  _ \| | | |/ _` / __|
+ 			| |__| (_| | (_| | |_| | |_) | |_| | (_| \__ \
+ 			|_____\__,_|\__,_|\__, |____/ \__,_|\__, |___/
+                			   |___/             |___/     
+		
+
+				          Etapa I 
+
+Implementarea engine-ul de sah se bazeaza pe urmatoarea codificare:
+-Tabla de sah va fi reprezentata in memorie ca o matrice de 9 x 9, incepand 
+numaratoarea liniilor si coloanelor de la 1
+-Casutele goale vor avea valoarea 0 in ele
+-Piesele albe vor fi reprezentate ca si numere pozitive
+-Piesele negre vor fi reprezentate ca si numere negative
+-Fiecare piesa va avea asociat un numar, prin care se va identifica unic
+piesa respectiva. Numarul este format astfel: 
+	numarUnic = (-1)^culoare * (tipPiesa * 10 + nrOrdine).
+Astfel, asocierea pentru tipul pieselor este urmatoarea:
+		1 ... Rege/Regina
+		2 ... Nebun
+		3 ... Cal
+		4 ... Tura
+		5 ... Pion.
+Tabla la momentul initial va arata in felul urmator:
+
+		-41 -31 -21 -11 -10 -22 -32 -42 
+		-51 -52 -53 -54 -55 -56 -57 -58 
+		  0   0   0   0   0   0   0   0 
+		  0   0   0   0   0   0   0   0 	
+		  0   0   0   0   0   0   0   0 
+		  0   0   0   0   0   0   0   0 
+		 51  52  53  54  55  56  57  58 
+		 41  31  21  11  10  22  32  42
+
+Dupa citirea comenzilor "xboard" si "protover", engine-ul intra intr-o bucla
+infinta, asteptand comenzi de la xboard. Pentru a implementa functionalitatile
+necesare, vom folosi urmatoarele functii si variabile :
+-colorToMove = specifica cine trebuie sa efectueze urmatoarea mutare
+-engineColor = specifica culoarea cu care joaca engine-ul
+-force       = specifica daca ne gasim in modul force
+-lastMove    = retine ultima mutare efectuata
+-positions   = un map care contine toate piesele existente pe tabla la un
+		moment dat, cheia fiind numarul piesei, iar valoarea fiind
+		pozitia ei curenta pe tabla. Pozitia unei piese va fi 
+		codificata linie*10 + coloana
+
++translatePosition() = actualizeaza o pozitie de pe tabla in map-ul position 
++initializeBoard()   = initializeaza tabla de sah, aseaza piesele la locul lor
+			si initializeaza map-ul position
++readFromInput()     = citeste o comanda de la Xboard
++makeMove()          = traduce o mutare intr-un sir de caractere, pentru a fi 
+			trimis catre Xboard. Totodata actualizeaza si matricea
+			si mapul cu pozitii pentru piesa mutata. In cazul in 
+			care o piesa este capturata, functia o sterge din map
++markMove()	      = traduce un sir de caractere primit de la Xboard repre
+			zentand o mutare si actualizeaza matricea si mapul
++checkCell()          = verifica daca o pozitie data prin linie si coloana 
+			apartine limitelor tablei de joc
++checkPiecePosition() = verifica daca o piesa a fost capturata sau nu
++movePawn()	      = muta un pion dat ca parametru, gasind prima modalitate
+			posibila
++applyStrategy()      = aplica Strategia. Daca nu exista nici o mutare posibila,
+			da resign pentru culoarea engine-ului
+
+
+
