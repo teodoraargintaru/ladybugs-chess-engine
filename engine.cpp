@@ -3,7 +3,6 @@
 //
 #include "engine.h"
 
-
 void translatePosition(int line, int col, int piece) {
     positions[piece] = line * 10 + col;
 }
@@ -17,7 +16,7 @@ void initializeBoard() {
 
     int pawn_w = PAWN1_W;
     int pawn_b = PAWN1_B;
-    for(int i = 1; i <= 8; i++){
+    for(int i = 1; i <= 8; i++) {
         translatePosition(7, i, pawn_b);
         translatePosition(2, i, pawn_w);
         board[7][i] = pawn_b--;
@@ -26,8 +25,7 @@ void initializeBoard() {
 
     int piece_w = ROOK1_W;
     int piece_b = ROOK1_B;
-
-    for(int i = 1; i <= 3; i++){
+    for(int i = 1; i <= 3; i++) {
         translatePosition(1, i, piece_w);
         translatePosition(1, 8 - i + 1, piece_w + 1);
         board[1][i] = piece_w++;
@@ -73,7 +71,7 @@ void readFromInput(string &input) {
     }
 }
 
-char * makeMove(int colFrom, int colTo, int lineFrom, int lineTo) {
+char* makeMove(int colFrom, int colTo, int lineFrom, int lineTo) {
     int piece = board[lineFrom][colFrom];
     if(board[lineFrom][colFrom] != EMPTY){
         positions.erase(board[lineFrom][colFrom]);
@@ -117,22 +115,24 @@ bool movePawn(int pawn) {
         return false;
     }
 
-    if(checkCell(positions[pawn] / 10 + sign, positions[pawn] % 10 + 1) == true &&
-       board[positions[pawn] / 10 + sign][positions[pawn] % 10 + 1] != EMPTY){
-        cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10 + 1, positions[pawn] / 10,
-                                positions[pawn] / 10 + sign)<<endl;
+    if(checkCell(positions[pawn] / 10 + sign, positions[pawn] % 10 + 1) == true
+        &&
+        board[positions[pawn] / 10 + sign][positions[pawn] % 10 + 1] != EMPTY){
+        cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10 + 1,
+                positions[pawn] / 10, positions[pawn] / 10 + sign)<<endl;
         return true;
     }
-    if(checkCell(positions[pawn] / 10 + sign, positions[pawn] % 10 - 1) == true &&
-       board[positions[pawn] / 10 + sign][positions[pawn] % 10 - 1] != EMPTY){
-        cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10 - 1, positions[pawn] / 10,
-                                positions[pawn] / 10 + sign)<<endl;
+    if(checkCell(positions[pawn] / 10 + sign, positions[pawn] % 10 - 1) == true
+        &&
+        board[positions[pawn] / 10 + sign][positions[pawn] % 10 - 1] != EMPTY){
+        cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10 - 1,
+                positions[pawn] / 10, positions[pawn] / 10 + sign)<<endl;
         return true;
     }
     if(checkCell(positions[pawn] / 10 + sign, positions[pawn] % 10) == true &&
        board[positions[pawn] / 10 + sign][positions[pawn] % 10] == EMPTY){
-        cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10, positions[pawn] / 10,
-                                positions[pawn] / 10 + sign)<<endl;
+        cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10,
+                positions[pawn] / 10, positions[pawn] / 10 + sign)<<endl;
         return true;
     }
 
@@ -141,10 +141,9 @@ bool movePawn(int pawn) {
 
 void applyStrategy() {
     bool legal = true;
-    if(engineColor == WHITE){
+    if(engineColor == WHITE) {
         legal = movePawn(PAWN1_W);
-    } else if(engineColor == BLACK){
-
+    } else if(engineColor == BLACK) {
         legal = movePawn(PAWN1_B);
     }
     if(legal == false){
