@@ -8,8 +8,8 @@ void translatePosition(int line, int col, int piece) {
 }
 
 void initializeBoard() {
-    for(int i = 3; i <= 6; i++){
-        for(int j = 1; j <= 8; j++){
+    for(int i = 3; i <= 6; i++) {
+        for(int j = 1; j <= 8; j++) {
             board[i][j] = EMPTY;
         }
     }
@@ -50,14 +50,14 @@ void initializeBoard() {
 }
 
 void printMap() {
-    for(auto& pair : positions){
+    for(auto& pair : positions) {
         cout<<pair.first<<" "<<pair.second<<endl;
     }
 }
 
 void printBoard() {
-    for(int i = 8; i >= 1; i--){
-        for(int j = 1; j <= 8; j++){
+    for(int i = 8; i >= 1; i--) {
+        for(int j = 1; j <= 8; j++) {
             printf("%3d ", board[i][j]);
         }
         cout<<endl;
@@ -66,14 +66,14 @@ void printBoard() {
 
 void readFromInput(string &input) {
     getline(cin, input);
-    if(input.size() > 77){
+    if(input.size() > 77) {
         exit(0);
     }
 }
 
 char* makeMove(int colFrom, int colTo, int lineFrom, int lineTo) {
     int piece = board[lineFrom][colFrom];
-    if(board[lineFrom][colFrom] != EMPTY){
+    if(board[lineFrom][colFrom] != EMPTY) {
         positions.erase(board[lineFrom][colFrom]);
     }
     board[lineFrom][colFrom] = EMPTY;
@@ -108,31 +108,122 @@ bool checkPiecePosition(int piece) {
     return positions.find(piece) != positions.end();
 }
 
+/* pentru CAL si REGE
+ * getPieceMoves(KNIGHTXYZ, KNIGHT_MOVES, knightMovesX, knightMovesY)
+ * (analog rege)
+ *
+ * pentru PION
+ * va trebui construit pawnMovesY ca un vector<int> pawnMovesY{sign, sign, sign}
+ * getPieceMoves(PAWNXYZ, PAWN_MOVES, pawnMovesX, pawnMovesY
+ *
+ * pentru TURA, NEBUN, REGINA
+ * va trebui apelata functia generateMoveVector(piece, movesX, movesY)
+ * */
+void insertRookMoves(int x, vector<int> &movesX, vector<int> &movesY){
+    for(int i = x + 1; i <= 8; i++) {
+        movesX.push_back(i - x);
+        movesY.push_back(0);
+    }
+
+    for(int i = 1; i < x; i++){
+        movesX.push_back(-1 * i);
+        movesY.push_back(0);
+    }
+}
+
+// vor fi inserate si pozitii redundante (din cauza diferentelor dintre x si y)
+void insertBishopMoves(int x, vector<int> &movesX, vector<int>&movesY) {
+    for(int i = x + 1; i <= 8; i++) {
+        movesX.push_back(i - x);
+        movesY.push_back(i - x);
+    }
+
+    for(int i = 1; i < x; i++) {
+        movesX.push_back(-1 * i);
+        movesY.push_back(-1 * i);
+    }
+}
+
+void generateMoveVectors(int piece, vector<int> &movesX, vector<int> &movesY) {
+    if(checkPiecePosition(piece) == false) {
+        return;
+    }
+
+    int x = positions[piece] / 10;
+    int y = positions[piece] % 10;
+
+    if(piece == ROOK1_B || piece == ROOK1_W ||
+        piece == ROOK2_B || piece == ROOK2_W) {
+        insertRookMoves(x, movesX, movesY);
+        insertRookMoves(y, movesY, movesX);
+        return;
+    }
+
+    if(piece == BISHOP1_B || piece == BISHOP1_W ||
+        piece == BISHOP2_B || piece == BISHOP2_W) {
+        insertBishopMoves(x, movesX, movesY);
+        return;
+    }
+
+    if(piece == QUEEN_W || piece == QUEEN_B) {
+        insertRookMoves(x, movesX, movesY);
+        insertRookMoves(y, movesY, movesX);
+        insertBishopMoves(x, movesX, movesY);
+    }
+}
+
+vector<string> getPieceMoves(int piece, int movesNr,
+        vector<int> &movesX, vector<int> &movesY) {
+    vector<string> possibleMoves;
+
+    if(checkPiecePosition(piece) == false) {
+        return possibleMoves;
+    }
+
+    string move = "";
+    for(int i = 0; i < movesNr; i++) {
+        if(checkCell(positions[piece] / 10 + movesX[i],
+                positions[piece] % 10 + movesY[i]) == true) {
+                move = "move " +
+                       string(makeMove(positions[piece] % 10,
+                                       positions[piece] % 10 + movesY[i],
+                                       positions[piece] / 10,
+                                       positions[piece] / 10 + movesX[i]));
+                possibleMoves.push_back(move);
+        }
+    }
+
+    return possibleMoves;
+}
+
 bool movePawn(int pawn) {
     int sign = pawn < 0 ? -1 : 1;
 
-    if(checkPiecePosition(pawn) == false){
+    if(checkPiecePosition(pawn) == false) {
         return false;
     }
 
     if(checkCell(positions[pawn] / 10 + sign, positions[pawn] % 10 + 1) == true
-        &&
-        board[positions[pawn] / 10 + sign][positions[pawn] % 10 + 1] != EMPTY){
-        cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10 + 1,
-                positions[pawn] / 10, positions[pawn] / 10 + sign)<<endl;
+       &&
+       board[positions[pawn] / 10 + sign][positions[pawn] % 10 + 1] != EMPTY) {
+        cout<<"move "<<makeMove(positions[pawn] % 10,
+                positions[pawn] % 10 + 1,positions[pawn] / 10,
+                positions[pawn] / 10 + sign)<<endl;
         return true;
     }
     if(checkCell(positions[pawn] / 10 + sign, positions[pawn] % 10 - 1) == true
-        &&
-        board[positions[pawn] / 10 + sign][positions[pawn] % 10 - 1] != EMPTY){
-        cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10 - 1,
-                positions[pawn] / 10, positions[pawn] / 10 + sign)<<endl;
+       &&
+       board[positions[pawn] / 10 + sign][positions[pawn] % 10 - 1] != EMPTY) {
+        cout<<"move "<<makeMove(positions[pawn] % 10,
+                positions[pawn] % 10 - 1,positions[pawn] / 10,
+                positions[pawn] / 10 + sign)<<endl;
         return true;
     }
     if(checkCell(positions[pawn] / 10 + sign, positions[pawn] % 10) == true &&
-       board[positions[pawn] / 10 + sign][positions[pawn] % 10] == EMPTY){
+       board[positions[pawn] / 10 + sign][positions[pawn] % 10] == EMPTY) {
         cout<<"move "<<makeMove(positions[pawn] % 10, positions[pawn] % 10,
-                positions[pawn] / 10, positions[pawn] / 10 + sign)<<endl;
+                                positions[pawn] / 10,
+                                positions[pawn] / 10 + sign)<<endl;
         return true;
     }
 
