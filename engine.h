@@ -6,7 +6,20 @@
 #define LADYBUGS_ENGINE_H
 
 #include "codifications.h"
+inline bool whiteKingMoved = false;
+inline bool blackKingMoved = false;
+inline bool whiteRookLeftMoved = false;
+inline bool whiteRookRightMoved = false;
+inline bool blackRookLeftMoved = false;
+inline bool blackRookRightMoved = false;
 
+inline int promotedWhite = 0;
+inline int promotedBlack = 0;
+inline pair<int, int> promotedPawn;
+inline bool promotionIsSet = false;
+
+inline int pawn2moves = EMPTY;
+inline bool enPassant = false;
 inline int board[9][9] = {0};
 // positions[piece] = line * 10 + col;
 inline unordered_map<int, int> positions;
@@ -24,6 +37,11 @@ inline int PAWN_MOVES = 3;
 inline vector<int> kingMovesX {-1, 0, 1, -1, 1, -1, 0, 1};
 inline vector<int> kingMovesY {-1, -1, -1, 0, 0, 1, 1, 1};
 inline int KING_MOVES = 8;
+
+inline vector< vector< vector< vector<int> > > > attacked
+    (2, vector< vector< vector< int> > >
+        (9, vector< vector < int> >
+                (9, vector <int> (0, 0))));
 
 // calls insertRookMoves/insertBishopMoves or both
 void generateMoveVectors(int piece, vector<int> &movesX, vector<int> &movesY);
@@ -69,4 +87,14 @@ bool movePawn(int pawn);
 // tries to make move. if there are no valid moves left it resigns
 void applyStrategy();
 
+void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
+                  int coloToMove);
+
+bool isCheck(int color);
+
+bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves);
+
+int applyMoveMinimax(int piece, pair<int, int> move);
+
+void undoMoveMinimax(int piece, int captured, int initialRow, int initialCol);
 #endif //LADYBUGS_CHESS_ENGINE_ENGINE_H
