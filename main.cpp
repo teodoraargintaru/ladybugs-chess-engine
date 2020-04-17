@@ -1,5 +1,13 @@
 #include "engine.h"
 
+void printAttacked(int color) {
+    for(int i = 1; i <= 8; i++) {
+        for(int j = 1; j <= 8; j++) {
+            printf("%2d ", attacked[color - 1][i][j].size());
+        }
+        cout<<endl;
+    }
+}
 int main(){
     char command[78];
     string input;
@@ -28,6 +36,11 @@ int main(){
                 markAttacked(dummy, WHITE);
                 dummy.clear();
                 markAttacked(dummy, BLACK);
+
+                cout<<"WHITE "<< endl;
+                printAttacked(WHITE);
+                cout<<"BLACK"<<endl;
+                printAttacked(BLACK);
 
                 whiteKingMoved = false;
                 blackKingMoved = false;
@@ -64,6 +77,13 @@ int main(){
                 char move[5]; // stores move as fromTo
                 strcpy(move, command + 9);
                 markMoveOnBoard(move);
+
+                cout<<"AFTER MOVE"<<endl;
+                cout<<"WHITE "<< endl;
+                printAttacked(WHITE);
+                cout<<"BLACK"<<endl;
+                printAttacked(BLACK);
+
                 if(force){
                     colorToMove = colorToMove == WHITE ? BLACK : WHITE;
                 }

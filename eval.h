@@ -11,7 +11,7 @@
 #define bishopValue 330
 #define rookValue 500
 #define queenValue 900
-#define kingValue 20000
+#define kingValue 2000
 #define gameStateEnd 2
 #define gameStateMiddle 1
 
@@ -206,6 +206,6 @@ inline int whiteKingEndGameSquareTable[9][9] =
                 {0,-50,-40,-30,-20,-20,-30,-40,-50}
         };
 
-pair<int, int> minimax_alphaBeta(int color, int alpha, int beta, int depth);
+pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int beta, int depth);
 
 #endif //LADYBUGS_EVAL_H

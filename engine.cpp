@@ -107,7 +107,8 @@ void translateStringToPositions(char *move, int *colFrom, int *colTo,
 void markMoveOnBoard(char *move) {
     int colFrom, colTo, lineFrom, lineTo;
     translateStringToPositions(move, &colFrom, &colTo, &lineFrom, &lineTo);
-    makeMove(colFrom, colTo, lineFrom, lineTo);
+    //makeMove(colFrom, colTo, lineFrom, lineTo);
+    applyMoveMinimax(board[lineFrom][colFrom], make_pair(lineTo, colTo));
 }
 
 bool checkCell(int line, int col) {
@@ -293,7 +294,8 @@ void getPieceMoves(int piece, int movesNr,
 
 void getPieceMovesPawn(int piece, int movesNr,
         vector<int> &newMovesX, vector<int> &newMovesY,
-        vector<int> &myPieceCovered) {
+        vector<int> &myPieceCovered,
+        vector<int> &attackButNoMoveX, vector<int> &attackButNoMoveY) {
     if(checkPiecePosition(piece) == false) {
         return;
     }
@@ -324,6 +326,9 @@ void getPieceMovesPawn(int piece, int movesNr,
             newMovesY.push_back(col + i);
         } else if (board[row + sign][col + i] * piece > 0) {
             myPieceCovered.push_back(board[row + sign][col + i]);
+        } else {
+            attackButNoMoveX.push_back(row + sign);
+            attackButNoMoveY.push_back(col + i);
         }
     }
 
@@ -525,20 +530,20 @@ void canDoCastling(int color,
 // completeaza tabela atacat pentru ambele culori
 // genereaza viitoarele miscari in moves doar pentru culoarea care e la mutare
 void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
-        int coloToMove) {
+        int myColorToMove) {
     initializeAttacked();
     vector< pair<int, int> > dummy;
 
     for (auto &entry : positions) {
         vector<int> newMovesX, newMovesY, myPieceCovered;
-
+        vector<int> attackButNoMoveX, attackButNoMoveY;
         int piece = entry.first;
         int sign = piece < 0 ? -1 : 1;
         int color = piece < 0 ? BLACK : WHITE;
 
         if (abs(piece) / 10 == 5) { // pion
             getPieceMovesPawn(piece, PAWN_MOVES, newMovesX, newMovesY,
-                    myPieceCovered);
+                    myPieceCovered, attackButNoMoveX, attackButNoMoveY);
         } else if (abs(piece) / 10 == 3) { // cal
             getPieceMoves(piece, KNIGHT_MOVES, knightMovesX, knightMovesY,
                     newMovesX, newMovesY, myPieceCovered);
@@ -552,7 +557,7 @@ void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
                     newMovesY, myPieceCovered);
         }
 
-        if (color == colorToMove) {
+        if (color == myColorToMove) {
             moves[piece] = dummy;
             for (int i = 0; i < newMovesX.size(); i++) {
                 moves[piece].push_back(make_pair(newMovesX[i], newMovesY[i]));
@@ -565,6 +570,10 @@ void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
                 continue;
             }
             attacked[color - 1][newMovesX[i]][newMovesY[i]].push_back(piece);
+        }
+
+        for (int i = 0; i < attackButNoMoveX.size(); i++) {
+            attacked[color - 1][attackButNoMoveX[i]][attackButNoMoveY[i]].push_back(piece);
         }
 
         for(auto &piece : myPieceCovered) {
@@ -680,7 +689,8 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
 bool isCheck(int color) {
     int king = color == WHITE ? KING_W : KING_B;
     int position = positions[king];
-    return (attacked[color - 1][position / 10][position % 10].size() > 0);
+    int opponentColor = color == WHITE ? BLACK : WHITE;
+    return (attacked[opponentColor - 1][position / 10][position % 10].size() > 0);
 }
 
 bool movePawn(int pawn) {
@@ -729,11 +739,13 @@ void applyStrategy() {
     }*/
 
 
-    pair<int, int> minimaxResult;
-    minimaxResult = minimax_alphaBeta(engineColor, INT_MIN, INT_MAX, 3);
-    int piece = minimaxResult.second / 100;
-    int rowTo = minimaxResult.second / 10;
-    int colTo = minimaxResult.second % 10;
+    pair<int, pair<int, pair<int, int>>> minimaxResult;
+    cout<<"Engine color is "<<engineColor<<endl;
+    minimaxResult = minimax_alphaBeta(engineColor, -1234567, 1234567, 2);
+    //minimaxResult = make_pair(INT_MAX, make_pair(PAWN3_B, make_pair(6, 3)));
+    int piece = minimaxResult.second.first;
+    int rowTo = minimaxResult.second.second.first;
+    int colTo = minimaxResult.second.second.second;
     int rowFrom = positions[piece] / 10;
     int colFrom = positions[piece] % 10;
 
@@ -764,5 +776,6 @@ void applyStrategy() {
 
     }
 
+    cout<<minimaxResult.first<<endl;
     cout<<"move "<<makeMove(colFrom, colTo, rowFrom, rowTo)<<endl;
 }

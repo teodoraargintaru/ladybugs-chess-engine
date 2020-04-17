@@ -15,6 +15,9 @@ void getPiecesOnTableOfType(int pieceAbs, int color, vector<int> &myPiecesOfType
 
     for (auto &entry : positions) {
         int piece = entry.first;
+        if (piece == EMPTY) {
+            continue;
+        }
 
         if (piece == KING_W || piece == KING_B) {
             continue;
@@ -37,7 +40,7 @@ int calculateScore(vector<int> &myPiecesOfType, int opponentPieces,
     int row, col;
     int score = 0;
 
-    score += queenValue *  (myPiecesOfType.size() - opponentPieces);
+    score += pieceValue *  (myPiecesOfType.size() - opponentPieces);
 
     for(int i = 0; i < myPiecesOfType.size(); i++) {
         row = positions[myPiecesOfType[i]] / 10;
@@ -165,9 +168,10 @@ int evaluate(int color) {
 
 
 // returneaza <scor, piesa * 100 + randDeMutat * 10 + coloanaDeMutat>
-pair<int, int> minimax_alphaBeta(int color, int alpha, int beta, int depth) {
+pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int beta, int depth) {
     if (depth == 0) {
-        return make_pair(evaluate(color), NULL);
+        //cout<<"Evaluare in frunze "<<evaluate(color)<<endl;
+        return make_pair(evaluate(color), make_pair(NULL, make_pair(NULL, NULL)));
     }
 
     int opponentColor = color == WHITE ? BLACK : WHITE;
@@ -175,7 +179,7 @@ pair<int, int> minimax_alphaBeta(int color, int alpha, int beta, int depth) {
 
     if(isCheck(opponentColor) == true) {
         if (isMat(opponentColor, moves) == true) {
-            return make_pair(INT_MAX, NULL);
+            return make_pair(INT_MAX, make_pair(NULL, make_pair(NULL, NULL)));
         }
     }
 
@@ -183,18 +187,21 @@ pair<int, int> minimax_alphaBeta(int color, int alpha, int beta, int depth) {
 
     if (isCheck(color)) {
         if (isMat(color, moves) == true) {
-            return make_pair(INT_MIN, NULL);
+            return make_pair(INT_MIN, make_pair(NULL, make_pair(NULL, NULL)));
         }
     }
 
     if (moves.size() == 0) {
+        //cout<<"Nu e sah"<<endl;
         markAttacked(moves, color);
     }
 
     int maxScore = INT_MIN;
-    int bestMove = 0;
+    pair<int, pair<int, int>> bestMove;
+
 
     for (auto &entry : moves) {
+        //cout<<entry.first<<" "<<endl;
         int piece = entry.first;
         int rowFrom = positions[piece] / 10;
         int colFrom = positions[piece] % 10;
@@ -207,14 +214,12 @@ pair<int, int> minimax_alphaBeta(int color, int alpha, int beta, int depth) {
 
             int score = -1 * (minimax_alphaBeta(opponentColor, -beta, -alpha, depth - 1)).first;
 
-            if (score >= maxScore) {
+            if (alpha <= score && score <= beta && score >= maxScore) {
                 maxScore = score;
+                bestMove = make_pair(piece, make_pair(rowTo, colTo));
             }
 
-            if (maxScore > alpha) {
-                alpha = maxScore;
-                bestMove = piece * 100 + rowTo * 10 + colTo;
-            }
+            alpha = max (alpha, maxScore);
 
             if(alpha >= beta) {
                 break;
@@ -225,5 +230,5 @@ pair<int, int> minimax_alphaBeta(int color, int alpha, int beta, int depth) {
         }
     }
 
-    return make_pair(alpha, bestMove);
+    return make_pair(maxScore, bestMove);
 }
