@@ -215,6 +215,10 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
         for (auto &move : entry.second) {
             int rowTo = move.first;
             int colTo = move.second;
+
+            if (rowTo == rowFrom && colTo == colFrom) {
+                continue;
+            }
             vector< vector< vector< vector<int> > > > attackedCopy = attacked;
             int captured = applyMoveMinimax(piece, move);
 
@@ -233,8 +237,6 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
             if(alpha >= beta) {
                 break;
             }
-
-
         }
     }
 

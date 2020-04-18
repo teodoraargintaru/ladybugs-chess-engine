@@ -70,7 +70,19 @@ void printMap() {
 void printBoard() {
     for(int i = 8; i >= 1; i--) {
         for(int j = 1; j <= 8; j++) {
-            printf("%3d ", board[i][j]);
+            if(abs(board[i][j]) / 10 == 5)
+                printf("%3c ", 'P');
+            else if(abs(board[i][j]) / 10 == 4)
+                printf("%3c ", 'T');
+            else if(abs(board[i][j]) / 10 == 3)
+                printf("%3c ", 'C');
+            else if(abs(board[i][j]) / 10 == 2)
+                printf("%3c ", 'N');
+            else if(abs(board[i][j])  == 10)
+                printf("%3c ", 'K');
+            else if(abs(board[i][j])  == 11)
+                printf("%3c ", 'Q');
+            else printf("%3c ",'.' );
         }
         cout<<endl;
     }
@@ -334,7 +346,7 @@ void getPieceMovesPawn(int piece, int movesNr,
 
     if (pawn2moves != EMPTY) {
         // e pe aceeasi rand cu mine, pe coloana de langa
-        if (positions[pawn2moves] / 10 && abs(col - positions[pawn2moves] % 10) == 1) {
+        if ((positions[pawn2moves] / 10 == row) && abs(col - positions[pawn2moves] % 10) == 1) {
             newMovesX.push_back(row + sign);
             newMovesY.push_back(positions[pawn2moves] % 10);
         }
@@ -683,14 +695,8 @@ void kingMobility(int king, int color,
         unordered_map<int, vector< pair<int, int> > > &moves) {
     int row = positions[king] / 10;
     int col = positions[king] % 10;
-    bool ok = false;
     int toRow, toCol;
     int opponentColor = color == WHITE ? BLACK : WHITE;
-
-    vector<pair<int, int>> dummy;
-    if (moves.find(king) == moves.end()) {
-        moves[king] = dummy;
-    }
 
     for(int i = 0; i < KING_MOVES; i++) {
         toRow = row + kingMovesX[i];
@@ -699,8 +705,12 @@ void kingMobility(int king, int color,
             board[toRow][toCol] * king <= 0 && // piesa diferita
             attacked[opponentColor - 1][toRow][toCol].size() == 0) {
             // pozitia nu e atacata
+            vector<pair<int, int>> dummy;
+            if (moves.find(king) == moves.end()) {
+                moves[king] = dummy;
+            }
+
             moves[king].push_back(make_pair(toRow, toCol));
-            ok = true;
         }
     }
 }
@@ -741,6 +751,7 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
     // pot sa ma mut
     kingMobility(king, color, moves);
     int opponentColor = color == WHITE ? BLACK : WHITE;
+    int sign = color == WHITE ? 1 : -1;
 
     // nu pot sa ma mut si sunt atacat din mai mult de 2 parti
     if(moves.size() == 0 &&
@@ -764,32 +775,85 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
     int minY = min(position % 10, attackerPosition % 10);
     int maxY = max(position % 10, attackerPosition % 10);
 
+
+
     if (abs(attacker) / 10 == 4 || abs(attacker) / 10 == 1) {
         // tura sau regina
+        // turele se ataca pe coloana
         for (int i = minX + 1; i < maxX; i++) {
-            if(attacked[color - 1][i][minY].size() > 0) {
+            if (attacked[color - 1][i][minY].size() > 0) {
                 insertAllButPawn(moves, i, minY, color);
             }
         }
 
+        // turele se ataca pe linie
         for (int i = minY + 1; i < maxY; i++) {
-            if(attacked[color - 1][minX][i].size() > 0) {
+            if (attacked[color - 1][minX][i].size() > 0) {
                 insertAllButPawn(moves, minX, i, color);
+            }
+
+            int possiblePawn = board[minX - sign][i];
+            if (checkCell(minX - sign, i) == true && (abs(possiblePawn) / 10 == 5) &&
+                    (possiblePawn * sign > 0)) {
+                if (moves.find(possiblePawn) == moves.end()) {
+                    vector< pair<int, int> > dummy;
+                    moves[possiblePawn] = dummy;
+                }
+
+                moves[possiblePawn].push_back(make_pair(minX, i));
+            }
+
+            int possiblePawn2 = board[minX - 2 * sign][i];
+            if (checkCell(minX - 2 * sign, i) == true && (abs(possiblePawn2) / 10 == 5) &&
+                possiblePawn2 * sign > 0 && board[minX - sign][i] == EMPTY) {
+                if ((color == WHITE && minX - 2 * sign == 2) || (color == BLACK && minX - 2 * sign == 7)) {
+                    if (moves.find(possiblePawn2) == moves.end()) {
+                        vector< pair<int, int> > dummy;
+                        moves[possiblePawn2] = dummy;
+                    }
+
+                    moves[possiblePawn].push_back(make_pair(minX, i));
+                }
             }
         }
     }
 
     if (abs(attacker) / 10 == 2 || abs(attacker) / 10 == 1) {
         // nebun sau regina
-        int directionX = position / 10 >= attackerPosition / 10 ? -1 : 1;
-        int directionY = position % 10 >= attackerPosition % 10 ? -1 : 1;
+        int directionX = position / 10 > attackerPosition / 10 ? -1 : 1;
+        int directionY = position % 10 > attackerPosition % 10 ? -1 : 1;
         for (int i = position / 10 + directionX,
                 j = position % 10 + directionY;
                 i != attackerPosition / 10 && j != attackerPosition % 10;
                 i += directionX, j += directionY) {
-            if(attacked[color - 1][i][j].size() > 0) {
+            if (attacked[color - 1][i][j].size() > 0) {
                 insertAllButPawn(moves, i, j, color);
             }
+
+            int possiblePawn = board[i - sign][j];
+            if (checkCell(i - sign, j) == true && (abs(possiblePawn) / 10 == 5) &&
+                possiblePawn * sign > 0) {
+                if (moves.find(possiblePawn) == moves.end()) {
+                    vector< pair<int, int> > dummy;
+                    moves[possiblePawn] = dummy;
+                }
+
+                moves[possiblePawn].push_back(make_pair(i - sign, j));
+            }
+
+            int possiblePawn2 = board[i - 2 * sign][j];
+            if (checkCell(i - 2 * sign, j) == true && (abs(possiblePawn2) / 10 == 5) &&
+                possiblePawn * 2 * sign > 0 && board[i - sign][j] == EMPTY) {
+                if ((color == WHITE && i - 2 * sign == 2) || (color == BLACK && i - 2 * sign == 7)) {
+                    if (moves.find(possiblePawn2) == moves.end()) {
+                        vector< pair<int, int> > dummy;
+                        moves[possiblePawn2] = dummy;
+                    }
+
+                    moves[possiblePawn].push_back(make_pair(i, j));
+                }
+            }
+
         }
     }
 
@@ -876,7 +940,7 @@ void applyStrategy() {
         return;
     }
 
-    if(piece == KING_B || (piece == KING_W && abs(colTo - colFrom) > 1)) {
+    if((piece == KING_B || piece == KING_W) && abs(colTo - colFrom) > 1) {
         int direction = colTo - colFrom; // 0 -> dreapta
         if (engineColor == WHITE) {
             if(direction > 0) {
