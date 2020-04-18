@@ -293,7 +293,7 @@ void getPieceMoves(int piece, int movesNr,
     for(int i = 0; i < movesNr; i++) {
         int toRow = positions[piece] / 10 + movesX[i];
         int toCol = positions[piece] % 10 + movesY[i];
-        if(checkCell(toRow, toCol) == true &&
+        if (checkCell(toRow, toCol) == true &&
                 (board[toRow][toCol] * piece <= 0)) {
                 newMovesX.push_back(toRow);
                 newMovesY.push_back(toCol);
@@ -318,7 +318,8 @@ void getPieceMovesPawn(int piece, int movesNr,
     int row = position / 10;
     int col = position % 10;
 
-    if (row == firstLine && board[row + sign * 2][col] == 0) {
+    if (row == firstLine && board[row + sign][col] == EMPTY &&
+        board[row + sign * 2][col] == EMPTY) {
         newMovesX.push_back(row + sign * 2);
         newMovesY.push_back(col);
     }
@@ -346,7 +347,8 @@ void getPieceMovesPawn(int piece, int movesNr,
 
     if (pawn2moves != EMPTY) {
         // e pe aceeasi rand cu mine, pe coloana de langa
-        if ((positions[pawn2moves] / 10 == row) && abs(col - positions[pawn2moves] % 10) == 1) {
+        if ((positions[pawn2moves] / 10 == row) &&
+            abs(col - positions[pawn2moves] % 10) == 1) {
             newMovesX.push_back(row + sign);
             newMovesY.push_back(positions[pawn2moves] % 10);
         }
@@ -634,6 +636,8 @@ void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
         int myColorToMove) {
     initializeAttacked();
     vector< pair<int, int> > dummy;
+    vector<int> kingNewMovesX, kingNewMovesY;
+    int otherColor = myColorToMove == WHITE ? BLACK : WHITE;
 
     for (auto &entry : positions) {
         vector<int> newMovesX, newMovesY, myPieceCovered;
@@ -652,6 +656,10 @@ void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
         } else if (piece == KING_W || piece == KING_B) { // rege
             getPieceMoves(piece, KING_MOVES, kingMovesX, kingMovesY,
                     newMovesX, newMovesY, myPieceCovered);
+            if (color == myColorToMove) {
+                kingNewMovesX = newMovesX;
+                kingNewMovesY = newMovesY;
+            }
         } else {
             vector<int> movesX, movesY;
             generateMoveVectors(piece, movesX, movesY, myPieceCovered);
@@ -659,13 +667,10 @@ void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
                     newMovesY, myPieceCovered);
         }
 
-        if (color == myColorToMove) {
+        // daca e rege nu adaug inca in moves
+        if (color == myColorToMove && abs(piece) != 10) {
             moves[piece] = dummy;
             for (int i = 0; i < newMovesX.size(); i++) {
-                /*if((piece == KING_W || piece == KING_B) &&
-                    attacked[opponentColor - 1][newMovesX[i]][newMovesY[i]].size() > 0) {
-                    continue;
-                }*/
                 moves[piece].push_back(make_pair(newMovesX[i], newMovesY[i]));
             }
         }
@@ -688,7 +693,45 @@ void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
         }
     }
 
+    // pentru rege pun doar mutarile care nu imi genereaza sah
+    int myKing = myColorToMove == WHITE ? KING_W : KING_B;
+    moves[myKing] = dummy;
+    for (int i = 0; i < kingNewMovesX.size(); i++) {
+        if (attacked[otherColor - 1][kingNewMovesX[i]][kingNewMovesY[i]].size() == 0) {
+            moves[myKing].push_back(make_pair(kingNewMovesX[i], kingNewMovesY[i]));
+        }
+    }
     canDoCastling(colorToMove, moves);
+}
+
+bool kingRemainsAttacked(int row, int col, int opponentColor,
+        int rowTo, int colTo) {
+    int attackerRow, attackerCol;
+
+    for(auto &attacker : attacked[opponentColor - 1][row][col]) {
+        attackerRow = positions[attacker] / 10;
+        attackerCol = positions[attacker] % 10;
+
+        // regina sau tura
+        if (abs(attacker) == 11 || abs(attacker) / 10 == 4) {
+            if (attackerRow == rowTo && abs(attackerCol - colTo) > 1) {
+                return true;
+            }
+            if (attackerCol == colTo && abs(attackerRow - rowTo) > 1) {
+                return true;
+            }
+        }
+
+        //regina sau nebun
+        if (abs(attacker) == 11 || abs(attacker) / 10 == 2) {
+            if (abs(attackerRow - rowTo) == abs(attackerCol - colTo) &&
+                abs (attackerRow - rowTo) > 1) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void kingMobility(int king, int color,
@@ -703,7 +746,8 @@ void kingMobility(int king, int color,
         toCol = col + kingMovesY[i];
         if(checkCell(toRow, toCol) == true && // e pe tabla
             board[toRow][toCol] * king <= 0 && // piesa diferita
-            attacked[opponentColor - 1][toRow][toCol].size() == 0) {
+            attacked[opponentColor - 1][toRow][toCol].size() == 0 &&
+            kingRemainsAttacked(row, col, opponentColor, toRow, toCol) == false) {
             // pozitia nu e atacata
             vector<pair<int, int>> dummy;
             if (moves.find(king) == moves.end()) {
@@ -713,6 +757,8 @@ void kingMobility(int king, int color,
             moves[king].push_back(make_pair(toRow, toCol));
         }
     }
+
+
 }
 
 void insertInMovesMap(unordered_map<int, vector< pair<int, int> > > &moves,
@@ -720,6 +766,9 @@ void insertInMovesMap(unordered_map<int, vector< pair<int, int> > > &moves,
     vector< pair<int, int> > dummy;
 
     for (auto conterAttack : attacked[color - 1][row][col]) {
+        if (abs(conterAttack) == 10) {
+            continue;
+        }
         if (moves.find(conterAttack) == moves.end()) {
             moves[conterAttack] = dummy;
         }
@@ -728,12 +777,12 @@ void insertInMovesMap(unordered_map<int, vector< pair<int, int> > > &moves,
     }
 }
 
-void insertAllButPawn(unordered_map<int, vector< pair<int, int> > > &moves,
+void insertAllButPawnAndKing(unordered_map<int, vector< pair<int, int> > > &moves,
                       int row, int col, int color) {
     vector< pair<int, int> > dummy;
 
     for (auto conterAttack : attacked[color - 1][row][col]) {
-        if(abs(conterAttack) / 10 == 5) {
+        if(abs(conterAttack) / 10 == 5 || abs(conterAttack) == 10) {
             continue;
         }
         if (moves.find(conterAttack) == moves.end()) {
@@ -765,7 +814,8 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
 
     if (attacked[color - 1]
         [attackerPosition / 10][attackerPosition % 10].size() > 0) {
-        insertInMovesMap(moves, position / 10, position % 10, color);
+        insertInMovesMap(moves, attackerPosition / 10,
+                attackerPosition % 10, color);
     }
 
     // pot sa blochez (doar tura, regina, nebun)
@@ -775,21 +825,19 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
     int minY = min(position % 10, attackerPosition % 10);
     int maxY = max(position % 10, attackerPosition % 10);
 
-
-
     if (abs(attacker) / 10 == 4 || abs(attacker) / 10 == 1) {
         // tura sau regina
         // turele se ataca pe coloana
         for (int i = minX + 1; i < maxX; i++) {
             if (attacked[color - 1][i][minY].size() > 0) {
-                insertAllButPawn(moves, i, minY, color);
+                insertAllButPawnAndKing(moves, i, minY, color);
             }
         }
 
         // turele se ataca pe linie
         for (int i = minY + 1; i < maxY; i++) {
             if (attacked[color - 1][minX][i].size() > 0) {
-                insertAllButPawn(moves, minX, i, color);
+                insertAllButPawnAndKing(moves, minX, i, color);
             }
 
             int possiblePawn = board[minX - sign][i];
@@ -818,7 +866,9 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
         }
     }
 
-    if (abs(attacker) / 10 == 2 || abs(attacker) / 10 == 1) {
+    if ((abs(attacker) / 10 == 2 || abs(attacker) / 10 == 1) &&
+        (abs(position / 10 - attackerPosition / 10) > 1) &&
+        (abs(position % 10 - attackerPosition % 10) > 1)) {
         // nebun sau regina
         int directionX = position / 10 > attackerPosition / 10 ? -1 : 1;
         int directionY = position % 10 > attackerPosition % 10 ? -1 : 1;
@@ -827,7 +877,7 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
                 i != attackerPosition / 10 && j != attackerPosition % 10;
                 i += directionX, j += directionY) {
             if (attacked[color - 1][i][j].size() > 0) {
-                insertAllButPawn(moves, i, j, color);
+                insertAllButPawnAndKing(moves, i, j, color);
             }
 
             int possiblePawn = board[i - sign][j];
@@ -961,6 +1011,6 @@ void applyStrategy() {
     }
 
     //cout<<minimaxResult.first<<endl;
-    cout<< "piece"<<piece<<endl;
+    //cout<< "piece"<<piece<<endl;
     cout<<"move "<<makeMove(colFrom, colTo, rowFrom, rowTo)<<endl;
 }

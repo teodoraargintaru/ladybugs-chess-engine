@@ -61,12 +61,12 @@ int evaluate(int color) {
 
     if (isCheck(color) == true) {
        // printAttacked(color);
-        score -= 10000;
+        score -= 50000;
     }
 
     if(isCheck(opponentColor) == true) {
         //printAttacked(opponentColor);
-        score += 10000;
+        score += 50000;
     }
 
     // queens

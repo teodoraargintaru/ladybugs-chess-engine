@@ -72,14 +72,13 @@ int main(){
                 strcpy(move, command + 9);
                 markMoveOnBoard(move);
 
-               /* cout<<"AFTER MOVE"<<endl;
+                /*cout<<"AFTER MOVE"<<endl;
                 cout<<"WHITE "<< endl;
                 printAttacked(WHITE);
                 cout<<"BLACK"<<endl;
                 printAttacked(BLACK);
-                cout<<"Board<<"<<endl;*/
-
-                printBoard();
+                cout<<"Board<<"<<endl;
+                printBoard();*/
 
                 if(force){
                     colorToMove = colorToMove == WHITE ? BLACK : WHITE;
@@ -92,8 +91,8 @@ int main(){
                 cout<<"BLACK"<<endl;
                 printAttacked(BLACK);
 
-                cout<<"Board<<"<<endl;
-                printBoard();*/
+                cout<<"Board<<"<<endl;*/
+                printBoard();
             } else continue;
     }
     return 0;

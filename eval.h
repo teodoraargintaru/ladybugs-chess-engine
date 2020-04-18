@@ -6,7 +6,7 @@
 #define LADYBUGS_EVAL_H
 #include "codifications.h"
 #include "engine.h"
-#define pawnValue 100
+#define pawnValue 50
 #define knightValue 320
 #define bishopValue 330
 #define rookValue 500
