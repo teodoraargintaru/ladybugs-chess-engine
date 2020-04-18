@@ -60,10 +60,12 @@ int evaluate(int color) {
     int myMiddleGamePieces = 0, opponentMiddleGamePieces = 0;
 
     if (isCheck(color) == true) {
+       // printAttacked(color);
         score -= 10000;
     }
 
     if(isCheck(opponentColor) == true) {
+        //printAttacked(opponentColor);
         score += 10000;
     }
 
@@ -177,7 +179,9 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
     int opponentColor = color == WHITE ? BLACK : WHITE;
     unordered_map<int, vector< pair<int, int> > > moves;
 
-    if(isCheck(opponentColor) == true) {
+    bool check = isCheck(opponentColor);
+    if(check == true) {
+        //cout<<"is check opponentcolor"<<opponentColor<<endl;
         if (isMat(opponentColor, moves) == true) {
             return make_pair(INT_MAX, make_pair(NULL, make_pair(NULL, NULL)));
         }
@@ -185,7 +189,9 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
 
     moves.clear();
 
+    check = isCheck(color);
     if (isCheck(color)) {
+        //cout<<"ischeck my color "<<color<<endl;
         if (isMat(color, moves) == true) {
             return make_pair(INT_MIN, make_pair(NULL, make_pair(NULL, NULL)));
         }
@@ -214,6 +220,9 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
 
             int score = -1 * (minimax_alphaBeta(opponentColor, -beta, -alpha, depth - 1)).first;
 
+            undoMoveMinimax(piece, captured, rowFrom, colFrom);
+            attacked = attackedCopy;
+
             if (alpha <= score && score <= beta && score >= maxScore) {
                 maxScore = score;
                 bestMove = make_pair(piece, make_pair(rowTo, colTo));
@@ -225,8 +234,7 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
                 break;
             }
 
-            undoMoveMinimax(piece, captured, rowFrom, colFrom);
-            attacked = attackedCopy;
+
         }
     }
 

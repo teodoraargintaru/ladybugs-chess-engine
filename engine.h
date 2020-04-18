@@ -6,12 +6,12 @@
 #define LADYBUGS_ENGINE_H
 
 #include "codifications.h"
-inline bool whiteKingMoved = false;
-inline bool blackKingMoved = false;
-inline bool whiteRookLeftMoved = false;
-inline bool whiteRookRightMoved = false;
-inline bool blackRookLeftMoved = false;
-inline bool blackRookRightMoved = false;
+inline int whiteKingMoved = 0;
+inline int blackKingMoved = 0;
+inline int whiteRookLeftMoved = 0;
+inline int whiteRookRightMoved = 0;
+inline int blackRookLeftMoved = 0;
+inline int blackRookRightMoved = 0;
 
 inline int promotedWhite = 0;
 inline int promotedBlack = 0;
@@ -97,4 +97,6 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves);
 int applyMoveMinimax(int piece, pair<int, int> move);
 
 void undoMoveMinimax(int piece, int captured, int initialRow, int initialCol);
+
+void printAttacked(int color);
 #endif //LADYBUGS_CHESS_ENGINE_ENGINE_H

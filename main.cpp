@@ -1,13 +1,6 @@
 #include "engine.h"
 
-void printAttacked(int color) {
-    for(int i = 1; i <= 8; i++) {
-        for(int j = 1; j <= 8; j++) {
-            printf("%2d ", attacked[color - 1][i][j].size());
-        }
-        cout<<endl;
-    }
-}
+
 int main(){
     char command[78];
     string input;
@@ -37,17 +30,18 @@ int main(){
                 dummy.clear();
                 markAttacked(dummy, BLACK);
 
-                cout<<"WHITE "<< endl;
+                /*cout<<"WHITE "<< endl;
                 printAttacked(WHITE);
                 cout<<"BLACK"<<endl;
-                printAttacked(BLACK);
+                printAttacked(BLACK);*/
 
-                whiteKingMoved = false;
-                blackKingMoved = false;
-                whiteRookLeftMoved = false;
-                whiteRookRightMoved = false;
-                blackRookLeftMoved = false;
-                blackRookRightMoved = false;
+                whiteKingMoved = 0;
+                blackKingMoved = 0;
+                whiteRookLeftMoved = 0;
+                whiteRookRightMoved = 0;
+                blackRookLeftMoved = 0;
+                blackRookRightMoved = 0;
+
                 promotedWhite = 0;
                 promotedBlack = 0;
                 promotionIsSet = false;
@@ -78,11 +72,11 @@ int main(){
                 strcpy(move, command + 9);
                 markMoveOnBoard(move);
 
-                cout<<"AFTER MOVE"<<endl;
+               /* cout<<"AFTER MOVE"<<endl;
                 cout<<"WHITE "<< endl;
                 printAttacked(WHITE);
                 cout<<"BLACK"<<endl;
-                printAttacked(BLACK);
+                printAttacked(BLACK);*/
 
                 if(force){
                     colorToMove = colorToMove == WHITE ? BLACK : WHITE;

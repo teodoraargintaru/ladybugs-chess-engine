@@ -334,7 +334,7 @@ void getPieceMovesPawn(int piece, int movesNr,
 
     if (pawn2moves != EMPTY) {
         // e pe aceeasi rand cu mine, pe coloana de langa
-        if (abs(col - positions[pawn2moves] % 10) == 1) {
+        if (positions[pawn2moves] / 10 && abs(col - positions[pawn2moves] % 10) == 1) {
             newMovesX.push_back(row + sign);
             newMovesY.push_back(positions[pawn2moves] % 10);
         }
@@ -356,9 +356,11 @@ int applyMoveMinimax(int piece, pair<int, int> move) {
         // e pe aceeasi rand cu mine, pe coloana de langa
         // si vreau sa fac mutarea de enpassant
         if (abs(piece / 10) == 5 && abs(colFrom - positions[pawn2moves] % 10) == 1
-            && colTo == positions[pawn2moves] % 10) {
+            && colTo == positions[pawn2moves] % 10 &&
+            (lineFrom == positions[pawn2moves] / 10)) {
             captured = pawn2moves;
             positions.erase(pawn2moves);
+            pawn2moves = EMPTY;
             enPassant = true;
         }
     }
@@ -401,6 +403,7 @@ int applyMoveMinimax(int piece, pair<int, int> move) {
     if ((piece == KING_B || piece == KING_W) && abs(colFrom - colTo) == 2) {
         // rocada mica -> negativ
         // rocada mare -> pozitiv
+
         int castlingType = (colFrom - colTo) / 2;
 
         // incepem de la tura din dreapta
@@ -411,6 +414,22 @@ int applyMoveMinimax(int piece, pair<int, int> move) {
             rook -= sign;
         }
 
+        if (piece == KING_W) {
+            if (rook == ROOK2_W) {
+                whiteRookRightMoved++;
+            } else {
+                whiteRookLeftMoved++;
+            }
+            whiteKingMoved++;
+        } else {
+            if (rook == ROOK2_B) {
+                blackRookRightMoved++;
+            } else {
+                blackRookLeftMoved++;
+            }
+            blackKingMoved++;
+        }
+
         int rookCol = positions[rook] % 10;
         int rookRow = lineTo;
 
@@ -419,6 +438,18 @@ int applyMoveMinimax(int piece, pair<int, int> move) {
         //rocada mica -> colrege - 1
         board[rookRow][colTo + castlingType] = rook;
         translatePosition(rookRow, colTo + castlingType, rook);
+    } else if (piece == KING_B) {
+        blackKingMoved++;
+    } else if (piece == KING_W) {
+        whiteKingMoved++;
+    } else if (piece == ROOK2_B) {
+        blackRookRightMoved++;
+    } else if (piece == ROOK1_B) {
+        blackRookLeftMoved++;
+    } else if (piece == ROOK1_W) {
+        whiteRookLeftMoved++;
+    } else if (piece == ROOK2_W) {
+        whiteRookRightMoved++;
     }
 
     board[lineTo][colTo] = piece;
@@ -436,7 +467,8 @@ int applyMoveMinimax(int piece, pair<int, int> move) {
 
 // sa avem grija sa pastram o copie a tabelei de atacate
 // si sa o reinitializam cand iesim din minimax
-// si sa salvam si unde era inainte
+// si sa salvam si unde era inainte\
+// TODO: si engineul celalalt poate sa faca en passant
 void undoMoveMinimax(int piece, int captured, int initialRow, int initialCol) {
     // unde se afla piesa mea acum
     int lineFrom = positions[piece] / 10;
@@ -448,14 +480,13 @@ void undoMoveMinimax(int piece, int captured, int initialRow, int initialCol) {
             translatePosition(initialRow, colFrom, captured);
             enPassant = false;
             pawn2moves = captured;
+            captured = EMPTY;
         } else {
             translatePosition(lineFrom, colFrom, captured);
         }
     }
 
-    if (enPassant == false) {
-        board[lineFrom][colFrom] = captured;
-    }
+    board[lineFrom][colFrom] = captured;
 
     if (promotionIsSet == true) {
         positions.erase(promotedPawn.second); //sterg regina
@@ -463,14 +494,72 @@ void undoMoveMinimax(int piece, int captured, int initialRow, int initialCol) {
         promotionIsSet = false;
     }
 
+    int sign = piece < 0 ? -1 : 1;
+    // castling
+    if ((piece == KING_B || piece == KING_W) && abs(colFrom - initialCol) == 2) {
+        // rocada mica -> negativ
+        // rocada mare -> pozitiv
+
+        int castlingType = (initialCol - colFrom) / 2;
+
+        // incepem de la tura din dreapta
+        int rook = sign * 42;
+
+        // daca e rocada mare
+        if (castlingType > 0) {
+            rook -= sign;
+        }
+
+        int rookCol = positions[rook] % 10;
+        int rookRow = initialRow;
+
+        if (piece == KING_W) {
+            if (rook == ROOK2_W) {
+                whiteRookRightMoved--;
+                board[1][8] = rook;
+                translatePosition(1, 8, rook);
+            } else {
+                whiteRookLeftMoved--;
+                board[1][1] = rook;
+                translatePosition(1, 1, rook);
+            }
+            whiteKingMoved--;
+        } else {
+            if (rook == ROOK2_B) {
+                blackRookRightMoved--;
+                board[8][8] = rook;
+                translatePosition(8, 8, rook);
+            } else {
+                blackRookLeftMoved--;
+                board[8][1] = rook;
+                translatePosition(8, 1, rook);
+            }
+            blackKingMoved--;
+        }
+
+        board[rookRow][rookCol] = EMPTY;
+    } else if (piece == KING_B) {
+        blackKingMoved--;
+    } else if (piece == KING_W) {
+        whiteKingMoved--;
+    } else if (piece == ROOK2_B) {
+        blackRookRightMoved--;
+    } else if (piece == ROOK1_B) {
+        blackRookLeftMoved--;
+    } else if (piece == ROOK1_W) {
+        whiteRookLeftMoved--;
+    } else if (piece == ROOK2_W) {
+        whiteRookRightMoved--;
+    }
+
     board[initialRow][initialCol] = piece;
     translatePosition(initialRow, initialCol, piece);
 }
 
-bool checkLeftRightCastling(int color, int rowKing, bool rookMoved, int endCol,
+bool checkLeftRightCastling(int color, int rowKing, int rookMoved, int endCol,
         int offset, int rook) {
     int attackerColor = color == WHITE ? BLACK : WHITE;
-    if (rookMoved == false) {
+    if (rookMoved == 0) {
         // daca regele este atacat de tura mea, atunci nu se afla nimic intre ele
         bool isAttackedBetween = false;
 
@@ -499,18 +588,18 @@ void canDoCastling(int color,
         return;
     }
 
-    bool kingMoved = color == WHITE ?
+    int kingMoved = color == WHITE ?
             whiteKingMoved : blackKingMoved;
-    bool rookLeftMoved = color == WHITE ?
+    int rookLeftMoved = color == WHITE ?
             whiteRookLeftMoved : blackRookLeftMoved;
-    bool rookRightMoved = color == WHITE ?
+    int rookRightMoved = color == WHITE ?
             whiteRookRightMoved : blackRookRightMoved;
     int rowKing = color == WHITE ? 1 : 8;
     int rookRight = color == WHITE ? ROOK2_W : ROOK2_B;
     int rookLeft = color == WHITE ? ROOK1_W : ROOK1_B;
     int king = color == WHITE ? KING_W : KING_B;
 
-    if (kingMoved == true) {
+    if (kingMoved > 0) {
         return;
     }
 
@@ -540,6 +629,7 @@ void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
         int piece = entry.first;
         int sign = piece < 0 ? -1 : 1;
         int color = piece < 0 ? BLACK : WHITE;
+        int opponentColor = piece < 0 ? WHITE : BLACK;
 
         if (abs(piece) / 10 == 5) { // pion
             getPieceMovesPawn(piece, PAWN_MOVES, newMovesX, newMovesY,
@@ -560,6 +650,10 @@ void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
         if (color == myColorToMove) {
             moves[piece] = dummy;
             for (int i = 0; i < newMovesX.size(); i++) {
+                /*if((piece == KING_W || piece == KING_B) &&
+                    attacked[opponentColor - 1][newMovesX[i]][newMovesY[i]].size() > 0) {
+                    continue;
+                }*/
                 moves[piece].push_back(make_pair(newMovesX[i], newMovesY[i]));
             }
         }
@@ -624,21 +718,38 @@ void insertInMovesMap(unordered_map<int, vector< pair<int, int> > > &moves,
     }
 }
 
+void insertAllButPawn(unordered_map<int, vector< pair<int, int> > > &moves,
+                      int row, int col, int color) {
+    vector< pair<int, int> > dummy;
+
+    for (auto conterAttack : attacked[color - 1][row][col]) {
+        if(abs(conterAttack) / 10 == 5) {
+            continue;
+        }
+        if (moves.find(conterAttack) == moves.end()) {
+            moves[conterAttack] = dummy;
+        }
+
+        moves[conterAttack].push_back(make_pair(row, col));
+    }
+}
+
 bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
     int king = color == WHITE ? KING_W : KING_B;
     int position = positions[king];
     vector< pair<int, int> > dummy;
     // pot sa ma mut
     kingMobility(king, color, moves);
+    int opponentColor = color == WHITE ? BLACK : WHITE;
 
     // nu pot sa ma mut si sunt atacat din mai mult de 2 parti
     if(moves.size() == 0 &&
-        attacked[color - 1][position / 10][position % 10].size() >= 2) {
+        attacked[opponentColor - 1][position / 10][position % 10].size() >= 2) {
         return true;
     }
 
     // sah dintr-o singura parte, pot sa iau piesa care ma ataca
-    int attacker = attacked[color - 1][position / 10][position % 10][0];
+    int attacker = attacked[opponentColor - 1][position / 10][position % 10][0];
     int attackerPosition = positions[attacker];
 
     if (attacked[color - 1]
@@ -657,27 +768,27 @@ bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves) {
         // tura sau regina
         for (int i = minX + 1; i < maxX; i++) {
             if(attacked[color - 1][i][minY].size() > 0) {
-                insertInMovesMap(moves, i, minY, color);
+                insertAllButPawn(moves, i, minY, color);
             }
         }
 
         for (int i = minY + 1; i < maxY; i++) {
             if(attacked[color - 1][minX][i].size() > 0) {
-                insertInMovesMap(moves, minX, i, color);
+                insertAllButPawn(moves, minX, i, color);
             }
         }
     }
 
     if (abs(attacker) / 10 == 2 || abs(attacker) / 10 == 1) {
         // nebun sau regina
-        int directionX = position / 10 > attackerPosition / 10 ? -1 : 1;
-        int directionY = position % 10 > attackerPosition % 10 ? -1 : 1;
+        int directionX = position / 10 >= attackerPosition / 10 ? -1 : 1;
+        int directionY = position % 10 >= attackerPosition % 10 ? -1 : 1;
         for (int i = position / 10 + directionX,
                 j = position % 10 + directionY;
-                i != attackerPosition / 10;
+                i != attackerPosition / 10 && j != attackerPosition % 10;
                 i += directionX, j += directionY) {
             if(attacked[color - 1][i][j].size() > 0) {
-                insertInMovesMap(moves, i, j, color);
+                insertAllButPawn(moves, i, j, color);
             }
         }
     }
@@ -727,6 +838,15 @@ bool movePawn(int pawn) {
     return false;
 }
 
+void printAttacked(int color) {
+    for(int i = 1; i <= 8; i++) {
+        for(int j = 1; j <= 8; j++) {
+            printf("%2d ", attacked[color - 1][i][j].size());
+        }
+        cout<<endl;
+    }
+}
+
 void applyStrategy() {
     /*bool legal = true;
     if(engineColor == WHITE) {
@@ -740,8 +860,8 @@ void applyStrategy() {
 
 
     pair<int, pair<int, pair<int, int>>> minimaxResult;
-    cout<<"Engine color is "<<engineColor<<endl;
-    minimaxResult = minimax_alphaBeta(engineColor, -1234567, 1234567, 2);
+    //cout<<"Engine color is "<<engineColor<<endl;
+    minimaxResult = minimax_alphaBeta(engineColor, -1234567, 1234567, 3);
     //minimaxResult = make_pair(INT_MAX, make_pair(PAWN3_B, make_pair(6, 3)));
     int piece = minimaxResult.second.first;
     int rowTo = minimaxResult.second.second.first;
@@ -776,6 +896,7 @@ void applyStrategy() {
 
     }
 
-    cout<<minimaxResult.first<<endl;
+    //cout<<minimaxResult.first<<endl;
+    cout<< "piece"<<piece<<endl;
     cout<<"move "<<makeMove(colFrom, colTo, rowFrom, rowTo)<<endl;
 }
