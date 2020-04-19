@@ -6,12 +6,12 @@
 #define LADYBUGS_EVAL_H
 #include "codifications.h"
 #include "engine.h"
-#define pawnValue 50
+#define pawnValue 100
 #define knightValue 320
 #define bishopValue 330
 #define rookValue 500
 #define queenValue 900
-#define kingValue 2000
+#define kingValue 20000
 #define gameStateEnd 2
 #define gameStateMiddle 1
 

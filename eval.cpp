@@ -173,7 +173,7 @@ int evaluate(int color) {
 pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int beta, int depth) {
     if (depth == 0) {
         //cout<<"Evaluare in frunze "<<evaluate(color)<<endl;
-        return make_pair(evaluate(color), make_pair(NULL, make_pair(NULL, NULL)));
+        return make_pair(evaluate(color), make_pair(EMPTY, make_pair(NULL, NULL)));
     }
 
     int opponentColor = color == WHITE ? BLACK : WHITE;
@@ -183,7 +183,7 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
     if(check == true) {
         //cout<<"is check opponentcolor"<<opponentColor<<endl;
         if (isMat(opponentColor, moves) == true) {
-            return make_pair(INT_MAX, make_pair(NULL, make_pair(NULL, NULL)));
+            return make_pair(INT_MAX, make_pair(EMPTY, make_pair(NULL, NULL)));
         }
     }
 
@@ -193,7 +193,7 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
     if (isCheck(color)) {
         //cout<<"ischeck my color "<<color<<endl;
         if (isMat(color, moves) == true) {
-            return make_pair(INT_MIN, make_pair(NULL, make_pair(NULL, NULL)));
+            return make_pair(INT_MIN, make_pair(EMPTY, make_pair(NULL, NULL)));
         }
     }
 
@@ -221,6 +221,11 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
             }
             vector< vector< vector< vector<int> > > > attackedCopy = attacked;
             int captured = applyMoveMinimax(piece, move);
+
+            if (isCheck(color) == true) {
+                undoMoveMinimax(piece, captured, rowFrom, colFrom);
+                continue;
+            }
 
             int score = -1 * (minimax_alphaBeta(opponentColor, -beta, -alpha, depth - 1)).first;
 

@@ -66,33 +66,36 @@ int main(){
             } else if(strcmp(command, "go") == 0){
                 engineColor = colorToMove;
                 force = false;
-                applyStrategy();
+                if (colorToMove == engineColor) {
+                    applyStrategy();
+                }
             } else if(strstr(command, "usermove") != NULL){
                 char move[5]; // stores move as fromTo
                 strcpy(move, command + 9);
                 markMoveOnBoard(move);
 
-                /*cout<<"AFTER MOVE"<<endl;
+                cout<<"AFTER MOVE"<<endl;
                 cout<<"WHITE "<< endl;
                 printAttacked(WHITE);
                 cout<<"BLACK"<<endl;
                 printAttacked(BLACK);
                 cout<<"Board<<"<<endl;
-                printBoard();*/
+                printBoard();
 
                 if(force){
                     colorToMove = colorToMove == WHITE ? BLACK : WHITE;
                 }
+
                 applyStrategy();
 
-                /*cout<<"AFTER MOVE"<<endl;
+                cout<<"AFTER MOVE"<<endl;
                 cout<<"WHITE "<< endl;
                 printAttacked(WHITE);
                 cout<<"BLACK"<<endl;
                 printAttacked(BLACK);
-
-                cout<<"Board<<"<<endl;*/
+                cout<<"Board<<"<<endl;
                 printBoard();
+
             } else continue;
     }
     return 0;
