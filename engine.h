@@ -6,7 +6,20 @@
 #define LADYBUGS_ENGINE_H
 
 #include "codifications.h"
+inline int whiteKingMoved = 0;
+inline int blackKingMoved = 0;
+inline int whiteRookLeftMoved = 0;
+inline int whiteRookRightMoved = 0;
+inline int blackRookLeftMoved = 0;
+inline int blackRookRightMoved = 0;
 
+inline int promotedWhite = 0;
+inline int promotedBlack = 0;
+inline pair<int, int> promotedPawn;
+//inline bool promotionIsSet = false;
+
+inline int pawn2moves = EMPTY;
+inline bool enPassant = false;
 inline int board[9][9] = {0};
 // positions[piece] = line * 10 + col;
 inline unordered_map<int, int> positions;
@@ -62,6 +75,8 @@ char* makeMove(int colFrom, int colTo, int lineFrom, int lineTo);
 // translates string to board positions and then calls makeMove
 void markMoveOnBoard(char *move);
 
+void initializeBoard2();
+
 // checks if cell is on board
 bool checkCell(int line, int col);
 
@@ -74,4 +89,17 @@ bool movePawn(int pawn);
 // tries to make move. if there are no valid moves left it resigns
 void applyStrategy();
 
+void markAttacked(unordered_map<int, vector< pair<int, int> > > &moves,
+                  int coloToMove);
+
+bool isCheck(int color);
+
+bool isMat(int color, unordered_map<int, vector< pair<int, int> > > &moves);
+
+int applyMoveMinimax(int piece, pair<int, int> move, bool &promotionIsSet);
+
+void undoMoveMinimax(int piece, int captured, int initialRow, int initialCol,
+        bool &promotionIsSet);
+
+void printAttacked(int color);
 #endif //LADYBUGS_CHESS_ENGINE_ENGINE_H
