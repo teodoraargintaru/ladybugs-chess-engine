@@ -174,7 +174,7 @@ int evaluate(int color) {
 pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int beta, int depth) {
     if (depth == 0) {
         //cout<<"Evaluare in frunze "<<evaluate(color)<<endl;
-        return make_pair(evaluate(engineColor), make_pair(EMPTY, make_pair(NULL, NULL)));
+        return make_pair(evaluate(color), make_pair(EMPTY, make_pair(NULL, NULL)));
     }
 
     int opponentColor = color == WHITE ? BLACK : WHITE;
@@ -184,7 +184,7 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
     if(check == true) {
         //cout<<"is check opponentcolor"<<opponentColor<<endl;
         if (isMat(opponentColor, moves) == true) {
-            return make_pair(999999, make_pair(EMPTY, make_pair(NULL, NULL)));
+            return make_pair(999997, make_pair(EMPTY, make_pair(NULL, NULL)));
         }
     }
 
@@ -194,7 +194,7 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
     if (isCheck(color)) {
         //cout<<"ischeck my color "<<color<<endl;
         if (isMat(color, moves) == true) {
-            return make_pair(-999999, make_pair(EMPTY, make_pair(NULL, NULL)));
+            return make_pair(-999997, make_pair(EMPTY, make_pair(NULL, NULL)));
         }
         cout<< " moves size; " << moves.size()<<endl;
     }
@@ -204,15 +204,27 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
         markAttacked(moves, color);
     }
 
+    /*
+    if (moves.size() == 1) {
+        int king = color == WHITE ? KING_W : KING_B;
+        vector<pair<int, int>> availableMove = moves[king];
+        return make_pair(200000, make_pair(king, availableMove[0]));
+    }*/
+
     int maxScore = -999999;
     pair<int, pair<int, int>> bestMove;
+    bool existMoves = false;
 
     for (auto &entry : moves) {
         //cout<<entry.first<<" "<<endl;
         int piece = entry.first;
+        if (piece == 0) {
+            continue;
+        }
+
         int rowFrom = positions[piece] / 10;
         int colFrom = positions[piece] % 10;
-
+        printf("Adancime %d piece %d row %d col %d\n", depth, piece, rowFrom, colFrom);
         for (auto &move : entry.second) {
             int rowTo = move.first;
             int colTo = move.second;
@@ -269,6 +281,7 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
             if (score > maxScore) {
                 maxScore = score;
                 bestMove = make_pair(piece, make_pair(rowTo, colTo));
+                existMoves = true;
             }
 
             if (maxScore > alpha) {
@@ -278,8 +291,10 @@ pair<int, pair<int, pair<int, int>>> minimax_alphaBeta(int color, int alpha, int
             if (maxScore >= beta) {
                 break;
             }
+
         }
     }
+
 
     return make_pair(maxScore, bestMove);
 }

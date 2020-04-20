@@ -721,7 +721,7 @@ void markAttacked(unordered_map<int, vector<pair<int, int> > > &moves,
                 kingNewMovesX = newMovesX;
                 kingNewMovesY = newMovesY;
             }
-        } else {
+        } else { // regina, tura, nebun
             vector<int> movesX, movesY;
             generateMoveVectors(piece, movesX, movesY, myPieceCovered);
             getPieceMoves(piece, movesX.size(), movesX, movesY, newMovesX,
@@ -1084,7 +1084,7 @@ void applyStrategy() {
 
     }
 
-    //cout<<minimaxResult.first<<endl;
+    cout<<minimaxResult.first<<endl;
     //cout<< "piece"<<piece<<endl;
     cout << "move " << makeMove(colFrom, colTo, rowFrom, rowTo) << endl;
 }
