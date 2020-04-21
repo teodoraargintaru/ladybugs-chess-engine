@@ -2,8 +2,8 @@
 // Created by Teodora Argintaru on 09/03/2020.
 //
 
-#ifndef PROIECT_CODIFICATIONS_H
-#define PROIECT_CODIFICATIONS_H
+#ifndef LADYBUGS_CODIFICATIONS_H
+#define LADYBUGS_CODIFICATIONS_H
 
 #include <fstream>
 #include <iostream>
@@ -13,6 +13,7 @@
 #include <utility>
 #include <initializer_list>
 #include <iterator>
+#include <vector>
 //#include <zconf.h>
 
 using namespace std;
@@ -21,7 +22,6 @@ using namespace std;
 #define BLACK     2
 #define NONE      3
 #define forever while(1)
-
 #define EMPTY      0
 
 #define KING_W    10
@@ -40,6 +40,7 @@ using namespace std;
 #define PAWN6_W    56
 #define PAWN7_W    57
 #define PAWN8_W    58
+#define PROMOTED_QUEEN_W 60
 
 #define KING_B   -10
 #define QUEEN_B  -11
@@ -57,5 +58,6 @@ using namespace std;
 #define PAWN6_B    -56
 #define PAWN7_B    -57
 #define PAWN8_B    -58
+#define PROMOTED_QUEEN_B -60
 
-#endif //PROIECT_CODIFICATIONS_H
+#endif //LADYBUGS_CODIFICATIONS_H
